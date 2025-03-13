@@ -100,3 +100,7 @@ you can use fbx in unity and UE to make animation now :) enjoy it.
 # Related
 - [animationGPT](https://github.com/fyyakaxyy/animationGPT)
 - [AvatarSoul](https://github.com/Gelercatty/AvatarSoul)
+- [motionGPT](https://github.com/OpenMotionLab/MotionGPT)
+- [smpl2bvh](https://github.com/KosukeFukazawa/smpl2bvh)
+
+thanks for their great work.
