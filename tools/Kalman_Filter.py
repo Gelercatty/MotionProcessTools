@@ -39,8 +39,8 @@ def Kalman_Filter(folder_path, save_path):
         print(f"Processed and saved: {output_file_path}")
 
 if __name__ == '__main__':
-    folder_path = './taichi3'
-    save_path = './taichi3_filtered'
+    folder_path = r'C:\Users\Y9000P\Desktop\WorkingSpace\motionProcessTools\MotionProcessTools\data\22point_kalman_left_right_swap(1)'
+    save_path = r'C:\Users\Y9000P\Desktop\WorkingSpace\motionProcessTools\MotionProcessTools\data\kalmanfilted'
 
     os.makedirs(save_path, exist_ok=True)
     Kalman_Filter(folder_path, save_path)

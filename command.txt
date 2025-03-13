@@ -1,0 +1,28 @@
+D:\SteamLibrary\steamapps\common\Blender\blender.exe -b --python ./tools/bvh2fbx.py -- --BVHF C:\Users\Y9000P\Desktop\WorkingSpace\motionProcessTools\MotionProcessTools\data\bvh --FBXF C:\Users\Y9000P\Desktop\WorkingSpace\motionProcessTools\MotionProcessTools\data\fbx
+
+
+python -m fit --dir ./data/npy_file_test --save_folder ./data/results --cuda
+
+
+我的目录结构如下
+motionprocessTools
+- Smplify3d
+-- tools
+--- config.py
+-- fit.py
+
+- deps
+-- smpl
+--- smpl_models
+
+config.py 下面有这两行定义
+SMPL_MODEL_DIR = r"/deps/smpl/smpl_models"
+GMM_MODEL_DIR = r"/deps/smpl/smpl_models"
+SMPL_MEAN_FILE = r"/deps/smpl/smpl_models/neutral_smpl_mean_params.h5"
+
+我在motionprocessTools 目录下运行 python -m Smplify3d.fit --dir ./data/npy_file_test --save_folder ./data/results --cuda 0
+
+会报错 
+ File "C:\Users\Y9000P\.conda\envs\mgpt\lib\site-packages\smplx\body_models.py", line 133, in __init__
+    assert osp.exists(smpl_path), 'Path {} does not exist!'.format(
+AssertionError: Path /deps/smpl/smpl_models does not exist!

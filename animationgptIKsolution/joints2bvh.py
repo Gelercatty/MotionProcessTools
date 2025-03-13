@@ -1,70 +1,19 @@
-"""this file is base on https://github.com/fyyakaxyy/animationGPT"""
-
-import matplotlib
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d.art3d import Poly3DCollection
-import mpl_toolkits.mplot3d.axes3d as p3
 import animationgptIKsolution.Animation as Animation
+
 from animationgptIKsolution.InverseKinematics import BasicInverseKinematics, BasicJacobianIK, InverseKinematics
 from animationgptIKsolution.Quaternions import Quaternions
 import animationgptIKsolution.BVH_mod as BVH
- 
 from animationgptIKsolution.remove_fs import *
+
+from utils.plot_script import plot_3d_motion
+from utils import paramUtil
 from common.skeleton import Skeleton
 import torch
+
+from torch import nn
 from animationgptIKsolution.utils.quat import ik_rot, between, fk, ik
 from tqdm import tqdm
-import numpy as np
-def plot_3d_motion(save_path, kinematic_tree, joints, title, figsize=(10, 10), fps=120, radius=4):
-    matplotlib.use('Agg')
 
-    title_sp = title.split(' ')
-    if len(title_sp) > 20:
-        title = '\n'.join([' '.join(title_sp[:10]), ' '.join(title_sp[10:20]), ' '.join(title_sp[20:])])
-    elif len(title_sp) > 10:
-        title = '\n'.join([' '.join(title_sp[:10]), ' '.join(title_sp[10:])])
-
-    def init():
-        ax.set_xlim3d([-radius / 2, radius / 2])
-        ax.set_ylim3d([0, radius])
-        ax.set_zlim3d([0, radius])
-        # print(title)
-        fig.suptitle(title, fontsize=20)
-        ax.grid(b=False)
-
-    def plot_xzPlane(minx, maxx, miny, minz, maxz):
-        ## Plot a plane XZ
-        verts = [
-            [minx, miny, minz],
-            [minx, miny, maxz],
-            [maxx, miny, maxz],
-            [maxx, miny, minz]
-        ]
-        xz_plane = Poly3DCollection([verts])
-        xz_plane.set_facecolor((0.5, 0.5, 0.5, 0.5))
-        ax.add_collection3d(xz_plane)
-
-    #         return ax
-
-    # (seq_len, joints_num, 3)
-    data = joints.copy().reshape(len(joints), -1, 3)
-    fig = plt.figure(figsize=figsize)
-    ax = p3.Axes3D(fig)
-    init()
-    MINS = data.min(axis=0).min(axis=0)
-    MAXS = data.max(axis=0).max(axis=0)
-    colors = ['red', 'blue', 'black', 'red', 'blue',
-              'darkblue', 'darkblue', 'darkblue', 'darkblue', 'darkblue',
-              'darkred', 'darkred', 'darkred', 'darkred', 'darkred']
-    frame_number = data.shape[0]
-    #     print(data.shape)
-
-    height_offset = MINS[1]
-    data[:, :, 1] -= height_offset
-    trajec = data[:, 0, [0, 2]]
-
-    data[..., 0] -= data[:, 0:1, 0]
-    data[..., 2] -= data[:, 0:1, 2]
 
 def get_grot(glb, parent, offset):
     root_quat = np.array([[1.0, 0.0, 0.0, 0.0]]).repeat(glb.shape[0], axis=0)[:, None]
@@ -79,8 +28,7 @@ def get_grot(glb, parent, offset):
 
 class Joint2BVHConvertor:
     def __init__(self):
-        self.template = BVH.load('./animationgptIKsolution/data/template.bvh', need_quater=True)
-        #self.template = BVH.load(os.path.dirname(__file__) + '\\visualization\\data\\template.bvh', need_quater=True)
+        self.template = BVH.load('./visualization/data/template.bvh', need_quater=True)
         self.re_order = [0, 1, 4, 7, 10, 2, 5, 8, 11, 3, 6, 9, 12, 15, 13, 16, 18, 20, 14, 17, 19, 21]
 
         self.re_order_inv = [0, 1, 5, 9, 2, 6, 10, 3, 7, 11, 4, 8, 12, 14, 18, 13, 15, 19, 16, 20, 17, 21]
@@ -168,22 +116,24 @@ class Joint2BVHConvertor:
 
 
 if __name__ == "__main__":
-    # 需要转换的npy文件
-    folder = r'C:\Users\Y9000P\Desktop\WorkingSpace\motionProcessTools\MotionProcessTools\data\npy_file'
-    files = os.listdir(os.path.join(folder))
-    # files = [f for f in files if 'repeat' in f]
-    save_folder = r'C:\Users\Y9000P\Desktop\WorkingSpace\motionProcessTools\MotionProcessTools\data\bvh'
-    # 保存转换后bvh文件的路径
-    if not os.path.exists(save_folder):
-            os.makedirs(save_folder)
+    # file = 'batch0_sample13_repeat0_len196.npy'
+    # file = 'batch2_sample10_repeat0_len156.npy'
+    # file = 'batch2_sample13_repeat0_len196.npy' #line #57 new_anim.positions = lpos #new_anim.positions[0:1].repeat(positions.shape[0], axis=-0) #TODO, figure out why it's important
+    # file = 'batch1_sample12_repeat0_len196.npy' #hard case karate
+    # file = 'batch1_sample14_repeat0_len180.npy'
+    # file = 'batch0_sample3_repeat0_len192.npy'
+    # file = 'batch1_sample4_repeat0_len136.npy'
+
+    # file = 'batch0_sample0_repeat0_len152.npy'
+    # path = f'/Users/yuxuanmu/project/MaskMIT/demo/cond4_topkr0.9_ts18_tau1.0_s1009/joints/{file}'
+    # joints = np.load(path)
+    # converter = Joint2BVHConvertor()
+    # new_anim = converter.convert(joints, './gen_L196.mp4', foot_ik=True)
+
+    folder = '/Users/yuxuanmu/project/MaskMIT/demo/cond4_topkr0.9_ts18_tau1.0_s1009'
+    files = os.listdir(os.path.join(folder, 'joints'))
+    files = [f for f in files if 'repeat' in f]
     converter = Joint2BVHConvertor()
     for f in tqdm(files):
-        if not f.endswith('.npy'):
-            continue
-        joints = np.load(os.path.join(folder, f))
-        print(joints.shape)
-        # if your data in the shape of [seq, joints, 3]，don't need this line
-        # if your data in the shape of [batch, seq, joints, 3],you will need this line，
-        # joints = np.squeeze(joints, axis=0) # if your data in the shape of [batch, seq, joints, 3],you will need this line，
-        
-        converter.convert(joints, os.path.join(save_folder, f'bvh_{f}'.replace('npy', 'bvh')), foot_ik=False)
+        joints = np.load(os.path.join(folder, 'joints', f))
+        converter.convert(joints, os.path.join(folder, 'ik_animations', f'ik_{f}'.replace('npy', 'mp4')), foot_ik=True)
